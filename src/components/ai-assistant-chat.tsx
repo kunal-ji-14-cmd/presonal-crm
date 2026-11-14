@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import type { FormEvent } from "react";
 import { Bot, Send, Sparkles, User, LoaderCircle } from "lucide-react";
 
 type Message = { role: "user" | "assistant"; content: string };
@@ -42,6 +43,6 @@ export default function AIAssistantChat() {
     </div>
     {error&&<div className="ai-chat-error">{error}</div>}
     <form className="ai-chat-form" onSubmit={submit}><input value={draft} onChange={e=>setDraft(e.target.value)} placeholder="Ask about your sales pipeline…" maxLength={4000} disabled={sending}/><button type="submit" disabled={sending||!draft.trim()} aria-label="Send message"><Send size={16}/></button></form>
-    <div className="ai-chat-disclaimer">AI can make mistakes. Review suggestions before acting. It cannot modify or contact CRM records.</div>
+    <div className="ai-chat-disclaimer">Your selected CRM records are sent to OpenAI to answer. Responses are not stored by this endpoint. AI can make mistakes; it cannot modify or contact records.</div>
   </section>;
 }

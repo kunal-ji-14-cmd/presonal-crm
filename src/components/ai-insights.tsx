@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Activity, AlertTriangle, ArrowRight, CalendarClock, CheckCircle2, Clock3, RefreshCw, Sparkles, Target, TrendingUp, Trophy, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import AIAssistantChat from "@/components/ai-assistant-chat";
 
 type Lead = { id:string; first_name:string; last_name:string|null; score:number|null; status:string; estimated_value:number|null; created_at:string; email:string|null };
 type Deal = { id:string; title:string; stage:string; amount:number|null; updated_at:string|null; created_at:string };
@@ -64,6 +65,7 @@ export default function AIInsights({ organizationId, onNavigate }:{organizationI
   const openSection=(item:Insight)=>onNavigate(item.kind==="priority"?"Tasks":item.kind==="win"?"Deals":item.title.toLowerCase().includes("deal")?"Deals":"Overview");
   return <div className="ai-insights">
     <div className="ai-hero"><div className="ai-hero-icon"><Sparkles size={22}/></div><div><div className="eyebrow"><span className="live-dot"/> SALES INTELLIGENCE</div><h1>Your sales, decoded.</h1><p>Practical signals calculated from your live CRM records—not invented forecasts.</p></div><button className="date-btn" onClick={()=>setRefreshKey(v=>v+1)} disabled={loading}><RefreshCw size={14} className={loading?"spin":""}/> Refresh analysis</button></div>
+    <AIAssistantChat />
     {error&&<div className="entity-error">{error}</div>}
     <div className="ai-metric-grid">
       <div className="ai-metric"><span>Active leads</span><b>{loading?"—":analysis.activeLeads}</b><small>Not converted or lost</small></div>

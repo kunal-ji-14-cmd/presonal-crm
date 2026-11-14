@@ -56,7 +56,7 @@ create table if not exists public.contacts (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (organization_id,id),
-  constraint contacts_company_org_fk foreign key (organization_id,company_id) references public.companies(organization_id,id) on delete set null
+  constraint contacts_company_org_fk foreign key (organization_id,company_id) references public.companies(organization_id,id) on delete restrict
 );
 create index if not exists contacts_org_email_idx on public.contacts(organization_id,email);
 
@@ -79,7 +79,7 @@ create table if not exists public.leads (
   updated_at timestamptz not null default now(),
   unique (organization_id,id),
   constraint leads_company_org_fk foreign key (organization_id,company_id) references public.companies(organization_id,id) on delete set null,
-  constraint leads_contact_org_fk foreign key (organization_id,contact_id) references public.contacts(organization_id,id) on delete set null
+  constraint leads_contact_org_fk foreign key (organization_id,contact_id) references public.contacts(organization_id,id) on delete restrict
 );
 create index if not exists leads_org_status_idx on public.leads(organization_id,status);
 create index if not exists leads_org_created_idx on public.leads(organization_id,created_at desc);
@@ -128,20 +128,6 @@ end $$;
 
 -- A new account gets a private starter organization. The function runs only
 -- from the auth.users insert trigger and creates its owner membership atomically.
-create or replace function public.handle_new_user()
-returns trigger language plpgsql security definer set search_path = public
-as $$
-declare org_name text; org_slug text;
-begin
-  org_name := coalesce(nullif(trim(new.raw_user_meta_data->>'company_name'),''), 'My Workspace');
-  org_slug := trim(both '-' from regexp_replace(lower(org_name), '[^a-z0-9]+', '-', 'g')) || '-' || substr(replace(new.id::text,'-',''),1,8);
-  insert into public.organizations(name,slug,created_by) values (org_name,org_slug,new.id)
-  returning id into strict org_slug; -- overwritten below by UUID-compatible variable in next migration fix
-  return new;
-end;
-$$;
-
--- Replace handler with a correctly typed organization id variable.
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public
 as $$
@@ -195,3 +181,11 @@ grant usage on schema public to authenticated;
 grant select, update on public.organizations to authenticated;
 grant select, insert, update, delete on public.organization_members to authenticated;
 grant select, insert, update, delete on public.companies, public.contacts, public.leads, public.deals, public.tasks to authenticated;
+
+-- Restrict helper/trigger function execution to the roles that need it.
+revoke all on function public.is_org_member(uuid) from public, anon;
+revoke all on function public.has_org_role(uuid, text[]) from public, anon;
+grant execute on function public.is_org_member(uuid) to authenticated;
+grant execute on function public.has_org_role(uuid, text[]) to authenticated;
+revoke all on function public.handle_new_user() from public, anon, authenticated;
+revoke all on function public.set_updated_at() from public, anon, authenticated;

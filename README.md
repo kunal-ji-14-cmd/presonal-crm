@@ -27,7 +27,7 @@ Open http://localhost:3000.
 3. Open **SQL Editor** in Supabase and run `supabase/migrations/0001_initial_crm.sql`.
 4. In **Authentication → URL Configuration**, set the Site URL to your local app URL and add `http://localhost:3000/auth/callback` to Redirect URLs.
 5. For production, add your deployed app URL and its `/auth/callback` URL too.
-6. Start the app with `npm run dev`.
+6. Set `OPENAI_API_KEY` in `.env.local` to an API key from the OpenAI Platform. Keep it server-only; do not use a `NEXT_PUBLIC_` prefix or commit the real key.\n7. Optionally set `OPENAI_MODEL` (default: `gpt-6-luna`).\n8. Start the app with `npm run dev`.
 
 New signups create an organization using the submitted business name and automatically become its owner. If email confirmation is enabled, the user must confirm the email before signing in.
 
@@ -41,8 +41,8 @@ New signups create an organization using the submitted business name and automat
 1. Complete auth and organization onboarding
 2. Connect dashboard to persistent CRM data
 3. Add role-aware CRUD for leads, contacts, companies, deals and tasks
-4. AI assistant, lead scoring and follow-up generation
+4. AI assistant connected to the OpenAI Responses API, lead scoring and follow-up generation
 5. WhatsApp, email and voice integrations
 6. Reports, forecasting and workflow automation
 
-> Demo note: the overview currently uses sample data in browser state. Authentication and database schema are implemented as a foundation, but the dashboard CRUD and AI/messaging integrations are not connected yet.
+> AI note: the AI assistant uses the OpenAI Responses API on the server and reads a limited, organization-scoped CRM snapshot. Configure `OPENAI_API_KEY` before use. AI suggestions do not automatically send messages or modify CRM records.

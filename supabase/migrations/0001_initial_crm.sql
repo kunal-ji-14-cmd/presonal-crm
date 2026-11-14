@@ -56,7 +56,7 @@ create table if not exists public.contacts (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (organization_id,id),
-  constraint contacts_company_org_fk foreign key (organization_id,company_id) references public.companies(organization_id,id) on delete set null
+  constraint contacts_company_org_fk foreign key (organization_id,company_id) references public.companies(organization_id,id) on delete restrict
 );
 create index if not exists contacts_org_email_idx on public.contacts(organization_id,email);
 
@@ -78,8 +78,8 @@ create table if not exists public.leads (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (organization_id,id),
-  constraint leads_company_org_fk foreign key (organization_id,company_id) references public.companies(organization_id,id) on delete set null,
-  constraint leads_contact_org_fk foreign key (organization_id,contact_id) references public.contacts(organization_id,id) on delete set null
+  constraint leads_company_org_fk foreign key (organization_id,company_id) references public.companies(organization_id,id) on delete restrict,
+  constraint leads_contact_org_fk foreign key (organization_id,contact_id) references public.contacts(organization_id,id) on delete restrict
 );
 create index if not exists leads_org_status_idx on public.leads(organization_id,status);
 create index if not exists leads_org_created_idx on public.leads(organization_id,created_at desc);
@@ -97,8 +97,8 @@ create table if not exists public.deals (
   owner_id uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint deals_company_org_fk foreign key (organization_id,company_id) references public.companies(organization_id,id) on delete set null,
-  constraint deals_contact_org_fk foreign key (organization_id,contact_id) references public.contacts(organization_id,id) on delete set null
+  constraint deals_company_org_fk foreign key (organization_id,company_id) references public.companies(organization_id,id) on delete restrict,
+  constraint deals_contact_org_fk foreign key (organization_id,contact_id) references public.contacts(organization_id,id) on delete restrict
 );
 create index if not exists deals_org_stage_idx on public.deals(organization_id,stage);
 
@@ -126,22 +126,7 @@ do $$ declare t text; begin
   end loop;
 end $$;
 
--- A new account gets a private starter organization. The function runs only
--- from the auth.users insert trigger and creates its owner membership atomically.
-create or replace function public.handle_new_user()
-returns trigger language plpgsql security definer set search_path = public
-as $$
-declare org_name text; org_slug text;
-begin
-  org_name := coalesce(nullif(trim(new.raw_user_meta_data->>'company_name'),''), 'My Workspace');
-  org_slug := trim(both '-' from regexp_replace(lower(org_name), '[^a-z0-9]+', '-', 'g')) || '-' || substr(replace(new.id::text,'-',''),1,8);
-  insert into public.organizations(name,slug,created_by) values (org_name,org_slug,new.id)
-  returning id into strict org_slug; -- overwritten below by UUID-compatible variable in next migration fix
-  return new;
-end;
-$$;
-
--- Replace handler with a correctly typed organization id variable.
+-- Every new user receives a private starter organization and owner membership.
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public
 as $$

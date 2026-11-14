@@ -170,11 +170,26 @@ create policy "owners and admins can update organizations" on public.organizatio
 create policy "members can view organization membership" on public.organization_members for select using (public.is_org_member(organization_id));
 create policy "owners and admins can manage membership" on public.organization_members for all using (public.has_org_role(organization_id,array['owner','admin'])) with check (public.has_org_role(organization_id,array['owner','admin']));
 
-create policy "members access companies" on public.companies for all using (public.is_org_member(organization_id)) with check (public.is_org_member(organization_id));
-create policy "members access contacts" on public.contacts for all using (public.is_org_member(organization_id)) with check (public.is_org_member(organization_id));
-create policy "members access leads" on public.leads for all using (public.is_org_member(organization_id)) with check (public.is_org_member(organization_id));
-create policy "members access deals" on public.deals for all using (public.is_org_member(organization_id)) with check (public.is_org_member(organization_id));
-create policy "members access tasks" on public.tasks for all using (public.is_org_member(organization_id)) with check (public.is_org_member(organization_id));
+create policy "members view companies" on public.companies for select using (public.is_org_member(organization_id));
+create policy "editors insert companies" on public.companies for insert with check (public.has_org_role(organization_id,array['owner','admin','manager','member']));
+create policy "editors update companies" on public.companies for update using (public.has_org_role(organization_id,array['owner','admin','manager','member'])) with check (public.has_org_role(organization_id,array['owner','admin','manager','member']));
+create policy "editors delete companies" on public.companies for delete using (public.has_org_role(organization_id,array['owner','admin','manager','member']));
+create policy "members view contacts" on public.contacts for select using (public.is_org_member(organization_id));
+create policy "editors insert contacts" on public.contacts for insert with check (public.has_org_role(organization_id,array['owner','admin','manager','member']));
+create policy "editors update contacts" on public.contacts for update using (public.has_org_role(organization_id,array['owner','admin','manager','member'])) with check (public.has_org_role(organization_id,array['owner','admin','manager','member']));
+create policy "editors delete contacts" on public.contacts for delete using (public.has_org_role(organization_id,array['owner','admin','manager','member']));
+create policy "members view leads" on public.leads for select using (public.is_org_member(organization_id));
+create policy "editors insert leads" on public.leads for insert with check (public.has_org_role(organization_id,array['owner','admin','manager','member']));
+create policy "editors update leads" on public.leads for update using (public.has_org_role(organization_id,array['owner','admin','manager','member'])) with check (public.has_org_role(organization_id,array['owner','admin','manager','member']));
+create policy "editors delete leads" on public.leads for delete using (public.has_org_role(organization_id,array['owner','admin','manager','member']));
+create policy "members view deals" on public.deals for select using (public.is_org_member(organization_id));
+create policy "editors insert deals" on public.deals for insert with check (public.has_org_role(organization_id,array['owner','admin','manager','member']));
+create policy "editors update deals" on public.deals for update using (public.has_org_role(organization_id,array['owner','admin','manager','member'])) with check (public.has_org_role(organization_id,array['owner','admin','manager','member']));
+create policy "editors delete deals" on public.deals for delete using (public.has_org_role(organization_id,array['owner','admin','manager','member']));
+create policy "members view tasks" on public.tasks for select using (public.is_org_member(organization_id));
+create policy "editors insert tasks" on public.tasks for insert with check (public.has_org_role(organization_id,array['owner','admin','manager','member']));
+create policy "editors update tasks" on public.tasks for update using (public.has_org_role(organization_id,array['owner','admin','manager','member'])) with check (public.has_org_role(organization_id,array['owner','admin','manager','member']));
+create policy "editors delete tasks" on public.tasks for delete using (public.has_org_role(organization_id,array['owner','admin','manager','member']));
 
 grant usage on schema public to authenticated;
 grant select, update on public.organizations to authenticated;

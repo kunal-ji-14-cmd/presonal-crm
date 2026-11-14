@@ -1,13 +1,13 @@
 "use client";
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Command, Eye, EyeOff, LoaderCircle, Sparkles } from "lucide-react";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const router = useRouter(); const params = useSearchParams();
   const [email,setEmail]=useState(""); const [password,setPassword]=useState(""); const [show,setShow]=useState(false); const [busy,setBusy]=useState(false); const [error,setError]=useState("");
-  async function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();setBusy(true);setError("");try{const supabase=createClient();const {error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;const nextPath = new URLSearchParams(window.location.search).get("next") || "/"; router.replace(nextPath.startsWith("/") ? nextPath : "/");router.refresh();}catch(err){setError(err instanceof Error?err.message:"Unable to sign in.");}finally{setBusy(false);}}
+  async function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();setBusy(true);setError("");try{const supabase=createClient();const {error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;router.replace(params.get("next")||"/");router.refresh();}catch(err){setError(err instanceof Error?err.message:"Unable to sign in.");}finally{setBusy(false);}}
   return <main className="auth-shell"><section className="auth-art"><div className="auth-brand"><span><Command size={18}/></span> nexus<span className="auth-brand-ai">.ai</span></div><div className="auth-art-copy"><div className="auth-kicker"><Sparkles size={14}/> RELATIONSHIPS, REIMAGINED</div><h1>Make every<br/>customer moment<br/><em>count.</em></h1><p>One clear view of your business. A smarter way to grow every relationship.</p></div><div className="auth-art-foot">NEXUS AI CRM <span>BUILT FOR WHAT'S NEXT</span></div></section><section className="auth-form-side"><div className="auth-form-wrap"><div className="auth-mobile-brand"><Command size={18}/> nexus<span>.ai</span></div><div className="auth-overline">WELCOME BACK</div><h2>Sign in to Nexus</h2><p className="auth-subtitle">Enter your details to access your workspace.</p><form onSubmit={submit} className="auth-form"><label>Email address<input type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@company.com"/></label><label>Password<div className="password-field"><input type={show?"text":"password"} autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password"/><button type="button" onClick={()=>setShow(!show)} aria-label={show?"Hide password":"Show password"}>{show?<EyeOff size={16}/>:<Eye size={16}/>}</button></div></label>{error&&<div className="auth-error">{error}</div>}<button className="auth-submit" disabled={busy}>{busy?<LoaderCircle className="spin" size={17}/>:null}Sign in</button></form><div className="auth-switch">New to Nexus? <Link href="/signup">Create an account</Link></div><div className="auth-note">Secure access to your customer workspace.</div></div></section></main>;
 }

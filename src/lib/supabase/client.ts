@@ -1,9 +1,11 @@
 "use client";
 import { createBrowserClient } from "@supabase/ssr";
 
+// The publishable key is designed for client-side use. Environment variables
+// can override these defaults for local or deployment-specific configuration.
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://kftkcqbhnzybjacyfsoc.supabase.co";
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_PUQIFXzqlF2Kx34wfcSM-Q_me2G8u08";
+
 export function createClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) throw new Error("Supabase is not configured. Add the public URL and anon key to .env.local.");
-  return createBrowserClient(url, key);
+  return createBrowserClient(SUPABASE_URL, SUPABASE_KEY);
 }

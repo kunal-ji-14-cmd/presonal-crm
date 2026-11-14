@@ -48,7 +48,8 @@ export default function AIInsights({ organizationId, onNavigate }:{organizationI
     const won=deals.filter(d=>(d.stage||"").toLowerCase()==="won");
     const pipeline=openDeals.reduce((s,d)=>s+Number(d.amount||0),0);
     const wonValue=won.reduce((s,d)=>s+Number(d.amount||0),0);
-    const stageWeights:Record<string,number>={discovery:.1,qualification:.25,proposal:.5,negotiation:.75};\n    const weighted=openDeals.reduce((s,d)=>s+Number(d.amount||0)*(stageWeights[(d.stage||"").toLowerCase()]??.2),0);
+    const stageWeights:Record<string,number>={discovery:.1,qualification:.25,proposal:.5,negotiation:.75};
+    const weighted=openDeals.reduce((s,d)=>s+Number(d.amount||0)*(stageWeights[(d.stage||"").toLowerCase()]??.2),0);
     const insights:Insight[]=[];
     if(overdue.length)insights.push({kind:"priority",title:`${overdue.length} overdue task${overdue.length===1?"":"s"} need attention`,detail:`The oldest overdue item is “${overdue[0].title}”. Clearing overdue work protects active opportunities.`,action:"Review tasks",icon:"clock"});
     if(hot.length)insights.push({kind:"opportunity",title:`${hot.length} high-scoring lead${hot.length===1?"":"s"} are worth contacting`,detail:`${hot.slice(0,3).map(l=>[l.first_name,l.last_name].filter(Boolean).join(" ")).join(", ")} ${hot.length===1?"has":"have"} a lead score of 70 or higher.`,action:"Open leads",icon:"target"});

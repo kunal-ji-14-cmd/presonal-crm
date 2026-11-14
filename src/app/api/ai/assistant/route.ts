@@ -90,6 +90,7 @@ export async function POST(request: Request) {
         model: process.env.OPENAI_MODEL || "gpt-6-luna",
         instructions,
         input,
+        store: false,
         max_output_tokens: 900
       }),
       signal: AbortSignal.timeout(45000)

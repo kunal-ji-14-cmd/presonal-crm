@@ -12,7 +12,7 @@ type Insight = { kind:"priority"|"opportunity"|"risk"|"win"; title:string; detai
 const money = (value:number) => new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(value);
 const daysSince = (value:string) => Math.floor((Date.now()-new Date(value).getTime())/86400000);
 
-export default function AIInsights({ organizationId, onNotice }:{organizationId:string|null;onNotice:(message:string)=>void}) {
+export default function AIInsights({ organizationId, onNavigate }:{organizationId:string|null;onNavigate:(section:string)=>void}) {
   const [leads,setLeads]=useState<Lead[]>([]);
   const [deals,setDeals]=useState<Deal[]>([]);
   const [tasks,setTasks]=useState<Task[]>([]);
@@ -48,7 +48,7 @@ export default function AIInsights({ organizationId, onNotice }:{organizationId:
     const won=deals.filter(d=>(d.stage||"").toLowerCase()==="won");
     const pipeline=openDeals.reduce((s,d)=>s+Number(d.amount||0),0);
     const wonValue=won.reduce((s,d)=>s+Number(d.amount||0),0);
-    const weighted=openDeals.reduce((s,d)=>s+Number(d.amount||0)*(({discovery:.1,qualification:.25,proposal:.5,negotiation:.75})[(d.stage||"").toLowerCase()]||.2),0);
+    const stageWeights:Record<string,number>={discovery:.1,qualification:.25,proposal:.5,negotiation:.75};\n    const weighted=openDeals.reduce((s,d)=>s+Number(d.amount||0)*(stageWeights[(d.stage||"").toLowerCase()]??.2),0);
     const insights:Insight[]=[];
     if(overdue.length)insights.push({kind:"priority",title:`${overdue.length} overdue task${overdue.length===1?"":"s"} need attention`,detail:`The oldest overdue item is “${overdue[0].title}”. Clearing overdue work protects active opportunities.`,action:"Review tasks",icon:"clock"});
     if(hot.length)insights.push({kind:"opportunity",title:`${hot.length} high-scoring lead${hot.length===1?"":"s"} are worth contacting`,detail:`${hot.slice(0,3).map(l=>[l.first_name,l.last_name].filter(Boolean).join(" ")).join(", ")} ${hot.length===1?"has":"have"} a lead score of 70 or higher.`,action:"Open leads",icon:"target"});
@@ -60,7 +60,7 @@ export default function AIInsights({ organizationId, onNotice }:{organizationId:
   },[leads,deals,tasks]);
 
   const iconFor=(name:Insight["icon"])=>name==="clock"?<Clock3 size={17}/>:name==="target"?<Target size={17}/>:name==="trophy"?<Trophy size={17}/>:<AlertTriangle size={17}/>;
-  const openSection=(kind:Insight["kind"])=>{const first=analysis.insights.find(i=>i.kind===kind);if(first)onNotice(first.action+" — use the workspace navigation to open the relevant records.");};
+  const openSection=(kind:Insight["kind"])=>onNavigate(kind==="priority"?"Tasks":kind==="risk"?"Deals":kind==="win"?"Deals":"Overview");
   return <div className="ai-insights">
     <div className="ai-hero"><div className="ai-hero-icon"><Sparkles size={22}/></div><div><div className="eyebrow"><span className="live-dot"/> SALES INTELLIGENCE</div><h1>Your sales, decoded.</h1><p>Practical signals calculated from your live CRM records—not invented forecasts.</p></div><button className="date-btn" onClick={()=>setRefreshKey(v=>v+1)} disabled={loading}><RefreshCw size={14} className={loading?"spin":""}/> Refresh analysis</button></div>
     {error&&<div className="entity-error">{error}</div>}

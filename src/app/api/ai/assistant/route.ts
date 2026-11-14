@@ -24,7 +24,7 @@ export async function POST(request: Request) {
           !!item && typeof item === "object" &&
           ((item as ChatMessage).role === "user" || (item as ChatMessage).role === "assistant") &&
           typeof (item as ChatMessage).content === "string"
-        ).map(item => ({ role: item.role, content: item.content.slice(0, 3000) }))
+        ).map((item: ChatMessage) => ({ role: item.role, content: item.content.slice(0, 3000) }))
       : [];
 
     const supabase = await createClient();
